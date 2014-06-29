@@ -268,6 +268,20 @@ function MorphingCircle(spec) {
 Morphing.prototype = {
 
   init: function() {
+    this.imgLoad( this.$el.find('img').attr('src') ).done( $.proxy(this.motion, this) );
+  },
+
+  imgLoad: function(src) {
+    var defer = $.Deferred(),
+        img = document.createElement('img');
+    img.src = src;
+    img.onload = function() {
+      return defer.resolve();
+    };
+    return defer.promise();
+  },
+
+  motion: function() {
     this.circ = new MorphingCircle( genCanvas.apply(this) );
     this.circ.init();
     this.circ.update();
