@@ -1,0 +1,5 @@
+$(function(){
+
+  $('.js-morphing').morphing();
+
+});
