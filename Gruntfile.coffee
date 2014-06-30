@@ -11,14 +11,6 @@ module.exports = (grunt) ->
   config =
 
     pkg: grunt.file.readJSON('package.json')
-    banner: """
-      /*! <%= pkg.name %> (<%= pkg.repository.url %>)
-       * lastupdate: <%= grunt.template.today("yyyy-mm-dd") %>
-       * version: <%= pkg.version %>
-       * author: <%= pkg.author.name %>
-       * License: MIT */
-
-      """
 
     ###
     grunt-contrib-jshint
@@ -36,8 +28,6 @@ module.exports = (grunt) ->
     grunt-contrib-uglify
     ###
     uglify:
-      options:
-        banner: '<%= banner %>'
       source:
         src : 'jquery.morphing.js'
         dest: 'jquery.morphing.min.js'

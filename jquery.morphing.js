@@ -2,7 +2,11 @@
 
 var pluginName = 'morphing',
     defaults   = {
-      propertyName: "value"
+      numVert  : 6,
+      spring   : 0.005,
+      friction : 0.9,
+      radius   : 90,
+      fps      :45
     };
 
 // コンストラクタ
@@ -13,14 +17,12 @@ function Morphing( el, opts ) {
   this._defaults = defaults;
   this._name     = pluginName;
   this.$el       = $(this.el); 
-
-  this.circ = null;
-  // TODO: オプション設定できるようにする
-  this.numVert  = ~~ (Math.random() * 3) + 6;
-  this.spring   = Math.random() * 0.015 + 0.005;
-  this.friction = Math.random() * 0.05 + 0.90;
-  this.radius   = 90;
-  this.fps      = 45;
+  this.circ      = null;
+  this.numVert   = ~~ (Math.random() * 3) + this.settings.numVert;
+  this.spring    = Math.random() * 0.015 + this.settings.spring;
+  this.friction  = Math.random() * 0.05 + this.settings.friction;
+  this.radius    = this.settings.radius;
+  this.fps       = this.settings.fps;
 
   this.init();
 
@@ -30,19 +32,38 @@ function Morphing( el, opts ) {
 function genCanvas() {
   var $img = $(this.$el).find('img');
   var canvas = document.createElement('canvas');
-  canvas.width  = $img.width();
-  canvas.height = $img.height();
-  this.$el
-    .empty()
-    .append( $(canvas) );
-  return {
-    img      : $img[0],
-    canvas   : canvas,
-    numVert  : this.numVert,
-    spring   : this.spring,
-    friction : this.friction,
-    radius   : this.radius
-  };
+  if ($img.length > 0) {
+    canvas.width  = $img.width();
+    canvas.height = $img.height();
+    this.$el
+      .empty()
+      .append( $(canvas) );
+    return {
+      img      : $img[0],
+      canvas   : canvas,
+      numVert  : this.numVert,
+      spring   : this.spring,
+      friction : this.friction,
+      radius   : this.radius
+    };
+  }
+  else {
+    canvas.width  = $(this.$el).width();
+    canvas.height = $(this.$el).height();
+    var color = this.$el.css('backgroundColor');
+    this.$el
+      .css('backgroundColor', 'transparent')
+      .append( $(canvas) );
+    return {
+      img      : false,
+      canvas   : canvas,
+      numVert  : this.numVert,
+      spring   : this.spring,
+      friction : this.friction,
+      radius   : this.radius,
+      color    : color
+    };
+  }
 }
 
 // Morphingクラス
@@ -53,13 +74,14 @@ function MorphingCircle(spec) {
       points   = [],
       x        = canvas.width * 0.5,
       y        = canvas.height * 0.5,
-      pattern  = ctx.createPattern( spec.img, 'repeat' ),
+      pattern  = (spec.img) ? ctx.createPattern( spec.img, 'repeat' ) : false,
       mouseX   = 0,
       mouseY   = 0,
       radius   = spec.radius,
       numVert  = spec.numVert,
       spring   = spec.spring,
       friction = spec.friction,
+      isImg    = spec.img,
       isMouseInCircle = false;
 
   function AnchorPoint2D(x, y) {
@@ -118,7 +140,12 @@ function MorphingCircle(spec) {
     }
     ctx.clearRect( 0, 0, canvas.width, canvas.height );
     ctx.beginPath();
-    ctx.fillStyle = pattern;
+    if (isImg) {
+      ctx.fillStyle = pattern;
+    }
+    else {
+      ctx.fillStyle = spec.color;
+    }
     drawBall(0);
     ctx.closePath();
     ctx.fill();
@@ -272,12 +299,17 @@ Morphing.prototype = {
   },
 
   imgLoad: function(src) {
-    var defer = $.Deferred(),
-        img = document.createElement('img');
-    img.src = src;
-    img.onload = function() {
+    var defer = $.Deferred();
+    if (this.$el.find('img').length > 0) {
+      var img = document.createElement('img');
+      img.src = src;
+      img.onload = function() {
+        return defer.resolve();
+      };
+    }
+    else {
       return defer.resolve();
-    };
+    }
     return defer.promise();
   },
 

@@ -1,5 +1,5 @@
 $(function(){
 
-  $('.js-morphing').morphing();
+  $('.js-morphing').morphing({ radius : 75 });
 
 });
